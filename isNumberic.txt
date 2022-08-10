@@ -1,0 +1,5 @@
+CREATE DEFINER=`root`@`localhost` FUNCTION `isNumberic`(input varchar(255)) RETURNS int
+    DETERMINISTIC
+BEGIN
+	RETURN input REGEXP '^[0-9]+\\.?[0-9]*$';
+END
