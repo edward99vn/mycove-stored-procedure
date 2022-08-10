@@ -32,7 +32,8 @@ BEGIN
     Declare buildingAreaSqrtValue varchar(55) default '';
     Declare buildingDescriptionValue varchar(55) default '';
     Declare constructionDateValue varchar(55) default '';
-    Declare buildingAddressValue varchar(55) default '';
+    Declare buildingAddressValue mediumtext default '';
+	Declare sameAsBuildingAddressValue varchar(55) default 0;
     
 		-- pass condition data into variable
 	select v.xml from `validate_import_table` v where v.username = usrName and v.date = (select max(date) from validate_import_table) into xml;
@@ -53,12 +54,19 @@ BEGIN
 		SELECT extractvalue(xml, '/records/record[$x]/building_area_sqrt') into buildingAreaSqrtValue;
 		SELECT extractvalue(xml, '/records/record[$x]/building_description') into buildingDescriptionValue;
 		SELECT extractvalue(xml, '/records/record[$x]/construction_date') into constructionDateValue;
-		SELECT extractvalue(xml, '/records/record[$x]/building_address') into buildingAddressValue;
+		SELECT extractvalue(xml, '/records/record[$x]/building_address') into buildingAddressValue; 
+        SELECT extractvalue(xml, '/records/record[$x]/same_as_building_address') into sameAsBuildingAddressValue;
+        
+		If (sameAsBuildingAddressValue = '' OR TRIM(sameAsBuildingAddressValue) = 'false') THEN
+			SET sameAsBuildingAddressValue = 0;
+		ELSEIF (TRIM(sameAsBuildingAddressValue) = 'true') THEN
+			SET sameAsBuildingAddressValue = 1;
+        END IF;
         
 			-- Find Building Property Id
 		select p.property_id from `property` p where p.property_name = propertyNameValue and p.property_client_id = clientIdParam ORDER BY p.created_date DESC LIMIT 1 into propertyIdParam;
 			-- Find Property Manager Id
-		select u.df_user_id from `user` u, `user_client_role_mapping` uc where u.user_first_name = propertyManagerNameValue and u.df_user_id = uc.user_id and uc.role_id = 2 and uc.client_id = clientIdParam into propertyManagerIdParam;
+		select u.df_user_id from `user` u, `user_client_role_mapping` uc where u.user_first_name = propertyManagerNameValue and u.df_user_id = uc.user_id and uc.role_id = 2 and uc.client_id = clientIdParam ORDER BY u.df_user_id DESC LIMIT 1 into propertyManagerIdParam;
         
         If (buildingAreaSqrtValue = '') then
 			set buildingAreaSqrtValue = 0;
@@ -78,7 +86,8 @@ BEGIN
             buildingAreaSqrtValue,
             -- constructionDateValue, 
             0, '', '', '',
-            0, NULL, NULL, NULL, buildingDescriptionValue, buildingAddressValue, clientIdParam, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), clientIdParam);
+            sameAsBuildingAddressValue, 
+            NULL, NULL, NULL, buildingDescriptionValue, buildingAddressValue, clientIdParam, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), clientIdParam);
 
 		-- Insert Amentities
 		call splitString(buildingAmentitiesValue, ',');
@@ -87,11 +96,14 @@ BEGIN
 			select vals from temp_string where id = buildingAmentityIndex into buildingAmentityName;
 
 			select a.amenity_id from `amenities` a where TRIM(a.amenity_name) = TRIM(buildingAmentityName) into amenityId;
-            insert into `building_amenities` (`building_id`, `amenities_id`, `created_by`, `created_date`, `last_modified_date`, `last_modified_by`) 
+            insert into `building_amenities` (`building_id`, `amenities_id`, `created_by`, `created_date`, `last_modified_date`, `last_modified_by`)
 				VALUES ((select MAX(building_id) from `building`), amenityId, clientIdParam, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), clientIdParam);
                 
 			set buildingAmentityIndex = buildingAmentityIndex + 1;
 		end while;
+		
+        -- reset aptFeatureIndex;
+		set buildingAmentityIndex = 1;
         
         -- Insert Feature
 		call splitString(buildingFeatureTagValue, ',');

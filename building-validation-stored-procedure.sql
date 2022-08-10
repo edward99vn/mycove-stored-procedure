@@ -30,7 +30,8 @@ BEGIN
     Declare buildingAreaSqrtValue varchar(55) default '';
     Declare buildingDescriptionValue varchar(55) default '';
     Declare constructionDateValue varchar(55) default '';
-    Declare buildingAddressValue varchar(55) default '';
+    Declare buildingAddressValue mediumtext default '';
+	Declare sameAsBuildingAddressValue varchar(55) default 0;
     
 		-- pass condition data into variable
 	select v.xml from `validate_import_table` v where v.username = usrName and v.date = (select max(date) from validate_import_table) into xml;
@@ -54,9 +55,14 @@ BEGIN
 		SELECT extractvalue(xml, '/records/record[$x]/building_description') into buildingDescriptionValue;
 		SELECT extractvalue(xml, '/records/record[$x]/construction_date') into constructionDateValue;
 		SELECT extractvalue(xml, '/records/record[$x]/building_address') into buildingAddressValue;
+		SELECT extractvalue(xml, '/records/record[$x]/same_as_building_address') into sameAsBuildingAddressValue;
         
 		-- START validation
 		SET x = x + 1;
+        
+		If (sameAsBuildingAddressValue = '') THEN
+			SET sameAsBuildingAddressValue = 0;
+        END IF;
         
 		-- VALIDATE building name
         
@@ -132,6 +138,12 @@ BEGIN
         
         IF (buildingAddressValue = '') THEN
 			SET invalidRows = CONCAT(invalidRows, 'Building address is null on row(s): ', x, '; ');	
+        END IF;
+        
+        -- VALIDATE same_as_building_address
+        
+        IF (sameAsBuildingAddressValue != '1' AND sameAsBuildingAddressValue != '0' AND TRIM(sameAsBuildingAddressValue) != 'true' AND TRIM(sameAsBuildingAddressValue) != 'false') THEN
+			SET invalidRows = CONCAT(invalidRows, 'Same As Building Address is not one of the following: 1, 0, true, false, null on rows(s): ', x, '; ');
         END IF;
         
     END WHILE;
