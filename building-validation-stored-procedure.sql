@@ -15,8 +15,8 @@ BEGIN
 		-- param
 	Declare clientIdParam int default 0;
 		-- building amentities
-	Declare buildingAmentityIndex int default 1;
-    Declare buildingAmentityName varchar(55) default '';
+	Declare buildingAmenityIndex int default 1;
+    Declare buildingAmenityName varchar(55) default '';
 		-- building feature
 	Declare buildingFeatureIndex int default 1;
     Declare buildingFeatureName varchar(55) default '';
@@ -25,7 +25,7 @@ BEGIN
     Declare buildingNameValue varchar(55) default '';
     Declare propertyNameValue varchar(55) default '';
     Declare propertyManagerNameValue varchar(55) default '';
-    Declare buildingAmentitiesValue varchar(55) default '';
+    Declare buildingAmenitiesValue varchar(55) default '';
     Declare buildingFeatureTagValue varchar(55) default '';
     Declare buildingAreaSqrtValue varchar(55) default '';
     Declare buildingDescriptionValue varchar(55) default '';
@@ -49,7 +49,7 @@ BEGIN
 		SELECT extractvalue(xml, '/records/record[$x]/building_name') into buildingNameValue;
 		SELECT extractvalue(xml, '/records/record[$x]/property_name') into propertyNameValue;
 		SELECT extractvalue(xml, '/records/record[$x]/property_manager_name') into propertyManagerNameValue;
-		SELECT extractvalue(xml, '/records/record[$x]/building_amentities') into buildingAmentitiesValue;
+		SELECT extractvalue(xml, '/records/record[$x]/building_amenities') into buildingAmenitiesValue;
 		SELECT extractvalue(xml, '/records/record[$x]/building_feature_tag') into buildingFeatureTagValue;
 		SELECT extractvalue(xml, '/records/record[$x]/building_area_sqrt') into buildingAreaSqrtValue;
 		SELECT extractvalue(xml, '/records/record[$x]/building_description') into buildingDescriptionValue;
@@ -90,23 +90,23 @@ BEGIN
 			SET invalidRows = CONCAT(invalidRows, 'Property Manager does not belong to this client on row(s): ', x, '; ');
         END IF;
         
-		-- VALIDATE building amentities
+		-- VALIDATE building amenities
         
-		IF (buildingAmentitiesValue = '') THEN
+		IF (buildingAmenitiesValue = '') THEN
 			SET invalidRows = CONCAT(invalidRows, 'Building Amentity is null on row(s): ', x, '; ');
 		ELSE
-			CALL splitString(buildingAmentitiesValue, ',');
+			CALL splitString(buildingAmenitiesValue, ',');
 				-- temp_string : this is temperary table to store splited string
-            while buildingAmentityIndex <= (select COUNT(*) from temp_string) do
-				select vals from temp_string where id = buildingAmentityIndex into buildingAmentityName;
-				if ((SELECT COUNT(*) from amenities WHERE TRIM(amenity_name) = TRIM(buildingAmentityName)) = 0) then
-                    SET invalidRows = CONCAT(invalidRows, 'Building Amentities [', TRIM(buildingAmentityName) ,'] does not exist on row(s): ', x, '; ');
+            while buildingAmenityIndex <= (select COUNT(*) from temp_string) do
+				select vals from temp_string where id = buildingAmenityIndex into buildingAmenityName;
+				if ((SELECT COUNT(*) from amenities WHERE TRIM(amenity_name) = TRIM(buildingAmenityName)) = 0) then
+                    SET invalidRows = CONCAT(invalidRows, 'Building Amenities [', TRIM(buildingAmenityName) ,'] does not exist on row(s): ', x, '; ');
 				end if;
-				set buildingAmentityIndex = buildingAmentityIndex + 1;
+				set buildingAmenityIndex = buildingAmenityIndex + 1;
 			end while;
             
 			-- reset aptFeatureIndex;
-			set buildingAmentityIndex = 1;
+			set buildingAmenityIndex = 1;
         END IF;
         
 		-- VALIDATE building feature tag

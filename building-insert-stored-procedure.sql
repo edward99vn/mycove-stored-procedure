@@ -17,8 +17,8 @@ BEGIN
     Declare amenityId int;
     Declare buildingFeatureId int;
 		-- building amentities
-	Declare buildingAmentityIndex int default 1;
-    Declare buildingAmentityName varchar(55) default '';
+	Declare buildingAmenityIndex int default 1;
+    Declare buildingAmenityName varchar(55) default '';
 		-- building feature
 	Declare buildingFeatureIndex int default 1;
     Declare buildingFeatureName varchar(55) default '';
@@ -27,7 +27,7 @@ BEGIN
     Declare buildingNameValue varchar(55) default '';
     Declare propertyNameValue varchar(55) default '';
     Declare propertyManagerNameValue varchar(55) default '';
-    Declare buildingAmentitiesValue varchar(55) default '';
+    Declare buildingAmenitiesValue varchar(55) default '';
     Declare buildingFeatureTagValue varchar(55) default '';
     Declare buildingAreaSqrtValue varchar(55) default '';
     Declare buildingDescriptionValue varchar(55) default '';
@@ -49,7 +49,7 @@ BEGIN
 		SELECT extractvalue(xml, '/records/record[$x]/building_name') into buildingNameValue;
 		SELECT extractvalue(xml, '/records/record[$x]/property_name') into propertyNameValue;
 		SELECT extractvalue(xml, '/records/record[$x]/property_manager_name') into propertyManagerNameValue;
-		SELECT extractvalue(xml, '/records/record[$x]/building_amentities') into buildingAmentitiesValue;
+		SELECT extractvalue(xml, '/records/record[$x]/building_amenities') into buildingAmenitiesValue;
 		SELECT extractvalue(xml, '/records/record[$x]/building_feature_tag') into buildingFeatureTagValue;
 		SELECT extractvalue(xml, '/records/record[$x]/building_area_sqrt') into buildingAreaSqrtValue;
 		SELECT extractvalue(xml, '/records/record[$x]/building_description') into buildingDescriptionValue;
@@ -76,10 +76,10 @@ BEGIN
 		INSERT INTO `building` (`building_property_id`, `building_client_id`, `building_manager_employee_id`, `building_name`, 
 			-- `building_latitude`, `building_longitude`, 
             `building_sqft`, 
-			-- `building_construction_date`, 
-            -- `building_street_address_1`, `building_street_address_2`, 
+			-- `building_construction_date`,
+            -- `building_street_address_1`, `building_street_address_2`,
             `building_zip`, `building_city`, `building_state`, `building_country`,
-            `same_as_address`, 
+            `same_as_address`,
             -- `building_mail_street_address1`, `building_mail_street_address2`, `building_mail_zip_code`, `building_mail_city`, `building_mail_state`, `building_mail_country`, 
             `is_property_location`, `building_blocked_flag`, `building_archived_flag`, `building_description`, `building_lat_lang_address`, `created_by`, `created_date`, `last_modified_date`, `last_modified_by`) VALUES
 			(propertyIdParam, clientIdParam, propertyManagerIdParam, buildingNameValue,
@@ -90,20 +90,20 @@ BEGIN
             NULL, NULL, NULL, buildingDescriptionValue, buildingAddressValue, clientIdParam, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), clientIdParam);
 
 		-- Insert Amentities
-		call splitString(buildingAmentitiesValue, ',');
+		call splitString(buildingAmenitiesValue, ',');
             -- temp_string : this is temperary table to store splited string
-		while buildingAmentityIndex <= (select COUNT(*) from temp_string) do
-			select vals from temp_string where id = buildingAmentityIndex into buildingAmentityName;
+		while buildingAmenityIndex <= (select COUNT(*) from temp_string) do
+			select vals from temp_string where id = buildingAmenityIndex into buildingAmenityName;
 
-			select a.amenity_id from `amenities` a where TRIM(a.amenity_name) = TRIM(buildingAmentityName) into amenityId;
+			select a.amenity_id from `amenities` a where TRIM(a.amenity_name) = TRIM(buildingAmenityName) into amenityId;
             insert into `building_amenities` (`building_id`, `amenities_id`, `created_by`, `created_date`, `last_modified_date`, `last_modified_by`)
 				VALUES ((select MAX(building_id) from `building`), amenityId, clientIdParam, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), clientIdParam);
                 
-			set buildingAmentityIndex = buildingAmentityIndex + 1;
+			set buildingAmenityIndex = buildingAmenityIndex + 1;
 		end while;
 		
         -- reset aptFeatureIndex;
-		set buildingAmentityIndex = 1;
+		set buildingAmenityIndex = 1;
         
         -- Insert Feature
 		call splitString(buildingFeatureTagValue, ',');
@@ -111,7 +111,7 @@ BEGIN
 			select vals from temp_string where id = buildingFeatureIndex into buildingFeatureName;
 
 			select ba.building_feature_id from `building_feature` ba where TRIM(ba.building_feature_name) = TRIM(buildingFeatureName) into buildingFeatureId;
-            insert into `building_building_feature_type` (`building_id`, `building_feature_type_id`) 
+            insert into `building_building_feature_type` (`building_id`, `building_feature_type_id`)
 				VALUES ((select MAX(building_id) from `building`), buildingFeatureId);
                 
 			set buildingFeatureIndex = buildingFeatureIndex + 1;
