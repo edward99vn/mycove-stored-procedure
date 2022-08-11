@@ -89,7 +89,7 @@ BEGIN
             sameAsBuildingAddressValue, 
             NULL, NULL, NULL, buildingDescriptionValue, buildingAddressValue, clientIdParam, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), clientIdParam);
 
-		-- Insert Amentities
+		-- Insert Amenities
 		call splitString(buildingAmenitiesValue, ',');
             -- temp_string : this is temperary table to store splited string
 		while buildingAmenityIndex <= (select COUNT(*) from temp_string) do
@@ -102,7 +102,7 @@ BEGIN
 			set buildingAmenityIndex = buildingAmenityIndex + 1;
 		end while;
 		
-        -- reset aptFeatureIndex;
+			-- reset aptFeatureIndex;
 		set buildingAmenityIndex = 1;
         
         -- Insert Feature
@@ -117,7 +117,7 @@ BEGIN
 			set buildingFeatureIndex = buildingFeatureIndex + 1;
 		end while;
         
-		-- reset aptFeatureIndex;
+		-- reset buildingFeatureIndex;
 		set buildingFeatureIndex = 1;
         
 		SET x = x + 1;

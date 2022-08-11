@@ -105,7 +105,7 @@ BEGIN
 				set buildingAmenityIndex = buildingAmenityIndex + 1;
 			end while;
             
-			-- reset aptFeatureIndex;
+			-- reset buildingAmenityIndex;
 			set buildingAmenityIndex = 1;
         END IF;
         
