@@ -76,7 +76,11 @@ BEGIN
 			SET invalidRows = CONCAT(invalidRows, 'Property Name is null on row(s): ', x, '; ');
         END IF;
         
-        -- VALIDATE constructionDateValue	(Not Required)
+        -- VALIDATE constructionDateValue
+        
+        IF (isDateValid(constructionDateValue) != true) THEN
+			SET invalidRows = CONCAT(invalidRows, 'Property Construction Date is invalid on row(s): ', x, '; ');
+        END IF;
         
         -- VALIDATE propertySqftValue
         
@@ -116,6 +120,21 @@ BEGIN
         
         IF (propertyAmenitiesValue = '') THEN
 			SET invalidRows = CONCAT(invalidRows, 'Property Amenities is null on row(s): ', x, '; ');
+		ELSE
+			CALL splitString(propertyAmenitiesValue, ',');
+			-- temp_string : this is temperary table to store splited string
+			while propertyAmenityIndex <= (select COUNT(*) from temp_string) do
+				select vals from temp_string where id = propertyAmenityIndex into propertyAmenityName;
+				if ((SELECT COUNT(*) from amenities WHERE TRIM(amenity_name) = TRIM(propertyAmenityName)) = 0) then
+                    -- SET invalidRows = CONCAT(invalidRows, 'Property Amenities [', TRIM(propertyAmenityName) ,'] does not exist on row(s): ', x, '; ');
+                    INSERT INTO `amenities` (`amenities_category_id`, `amenity_name`, `amenity_description`, `amenity_booking_flag`, `amenity_age_limit_flag`, `amenity_age_range_from`, `amenity_age_range_to`, `amenity_dont_allow_instant_booking_flag`, `amenity_how_many_days_advance`, `amenity_people_head_count_flag`, `amenity_people_head_count_min`, `amenity_people_head_count_max`, `amenity_allow_alcohol_flag`, `amenity_third_party_vendor_allowed_flag`, `amenity_image_url`, `amenities_blocked_flag`, `amenities_archived_flag`, `amenity_created_at`, `amenity_updated_at`) VALUES
+					(6, propertyAmenityName, propertyAmenityName, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 1, 1, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
+				end if;
+				set propertyAmenityIndex = propertyAmenityIndex + 1;
+			end while;
+            
+			-- reset propertyAmenityIndex;
+			set propertyAmenityIndex = 1;
         END IF;
         
         -- VALIDATE propertyManagerNameValue

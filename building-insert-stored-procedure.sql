@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `building_insert_stored_procedure`(
+CREATE DEFINER=`dbmasteruser`@`%` PROCEDURE `building_insert_stored_procedure`(
 	-- Add the parameters for the stored procedure here
 	IN usrName varchar(55),
 	OUT statusResponse INT
@@ -63,6 +63,12 @@ BEGIN
 			SET sameAsBuildingAddressValue = 1;
         END IF;
         
+		IF (constructionDateValue = '') THEN
+			SET constructionDateValue = NULL;
+		ELSE 
+			SET constructionDateValue = DATE_FORMAT(STR_TO_DATE(constructionDateValue,'%m/%d/%Y'), '%Y-%m-%d'); 
+        END IF;
+        
 			-- Find Building Property Id
 		select p.property_id from `property` p where p.property_name = propertyNameValue and p.property_client_id = clientIdParam ORDER BY p.created_date DESC LIMIT 1 into propertyIdParam;
 			-- Find Property Manager Id
@@ -76,7 +82,7 @@ BEGIN
 		INSERT INTO `building` (`building_property_id`, `building_client_id`, `building_manager_employee_id`, `building_name`, 
 			-- `building_latitude`, `building_longitude`, 
             `building_sqft`, 
-			-- `building_construction_date`,
+			`building_construction_date`,
             -- `building_street_address_1`, `building_street_address_2`,
             `building_zip`, `building_city`, `building_state`, `building_country`,
             `same_as_address`,
@@ -84,7 +90,7 @@ BEGIN
             `is_property_location`, `building_blocked_flag`, `building_archived_flag`, `building_description`, `building_lat_lang_address`, `created_by`, `created_date`, `last_modified_date`, `last_modified_by`) VALUES
 			(propertyIdParam, clientIdParam, propertyManagerIdParam, buildingNameValue,
             buildingAreaSqrtValue,
-            -- constructionDateValue, 
+            constructionDateValue, 
             0, '', '', '',
             sameAsBuildingAddressValue, 
             NULL, NULL, NULL, buildingDescriptionValue, buildingAddressValue, clientIdParam, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), clientIdParam);

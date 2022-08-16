@@ -1,0 +1,4 @@
+CREATE DEFINER=`dbmasteruser`@`%` FUNCTION `isEmailValid`(input varchar(255)) RETURNS int
+BEGIN
+	RETURN input REGEXP '[a-z0-9]+@[a-z]+\.[a-z]{2,3}';
+END

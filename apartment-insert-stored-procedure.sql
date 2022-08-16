@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `apartment_insert_stored_procedure`(
+CREATE DEFINER=`dbmasteruser`@`%` PROCEDURE `apartment_insert_stored_procedure`(
 	-- Add the parameters for the stored procedure here
 	IN usrName varchar(55),
 	OUT statusResponse INT
@@ -71,7 +71,6 @@ BEGIN
                 
 			set aptFeatureIndex = aptFeatureIndex + 1;
 		end while;
-        
 		-- reset aptFeatureIndex;
 		set aptFeatureIndex = 1;
 				

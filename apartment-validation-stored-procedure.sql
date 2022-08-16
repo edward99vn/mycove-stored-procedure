@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `apartment_validation_stored_procedure`( 	
+CREATE DEFINER=`dbmasteruser`@`%` PROCEDURE `apartment_validation_stored_procedure`(
 	-- Add the parameters for the stored procedure here
 	IN usrName varchar(55), 
 	OUT statusResponse INT
@@ -105,8 +105,10 @@ BEGIN
 			while aptFeatureIndex <= (select COUNT(*) from temp_string) do
 				select vals from temp_string where id = aptFeatureIndex into aptFeatureName;
 				if ((SELECT COUNT(*) from appartment_feature WHERE TRIM(appartment_feature_name) = TRIM(aptFeatureName)) = 0) then
-                    SET invalidRows = CONCAT(invalidRows, 'Apartment Feature [', TRIM(aptFeatureName) ,'] does not exist on row(s): ', x, '; ');
-				end if;
+                    -- SET invalidRows = CONCAT(invalidRows, 'Apartment Feature [', TRIM(aptFeatureName) ,'] does not exist on row(s): ', x, '; ');
+					insert into `appartment_feature` (`appartment_feature_name`, `appartment_feature_description`, `appartment_feature_archived_flag`, `appartment_feature_blocked_flag`, `appartment_feature_created_by`, `appartment_feature_created_at`) VALUES
+					(aptFeatureName, aptFeatureName, 0, 0, (select df_user_id from user where user_email = usrName ORDER BY df_user_id DESC LIMIT 1), CURRENT_TIMESTAMP());
+                end if;
 				set aptFeatureIndex = aptFeatureIndex + 1;
 			end while;
             

@@ -65,7 +65,9 @@ BEGIN
         SELECT extractvalue(xml, '/records/record[$x]/same_as_property_address') into sameAsPropertyAddressValue;
         
         IF (constructionDateValue = '') THEN
-			set constructionDateValue = NULL;
+			SET constructionDateValue = NULL;
+		ELSE 
+			SET constructionDateValue = DATE_FORMAT(STR_TO_DATE(constructionDateValue,'%m/%d/%Y'), '%Y-%m-%d'); 
         END IF;
 
 		If (sameAsPropertyAddressValue = '' OR TRIM(sameAsPropertyAddressValue) = 'false') THEN

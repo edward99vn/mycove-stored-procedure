@@ -1,0 +1,9 @@
+CREATE DEFINER=`dbmasteruser`@`%` FUNCTION `isDateValid`(input varchar(255)) RETURNS int
+BEGIN
+	Declare responseStatus int default 1;
+	IF (select STR_TO_DATE(input, '%m/%d/%Y') IS NULL) THEN
+		SET responseStatus = 0;
+    END IF;
+    
+    return responseStatus;
+END

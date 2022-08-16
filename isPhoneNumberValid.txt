@@ -1,0 +1,5 @@
+CREATE DEFINER=`dbmasteruser`@`%` FUNCTION `isPhoneNumberValid`(input varchar(255)) RETURNS int
+    DETERMINISTIC
+BEGIN
+	return input REGEXP '^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$';
+END
