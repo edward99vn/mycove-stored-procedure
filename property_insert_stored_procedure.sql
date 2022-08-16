@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `property_insert_stored_procedure`(
+CREATE DEFINER=`dbmasteruser`@`%` PROCEDURE `property_insert_stored_procedure`(
 	-- Add the parameters for the stored procedure here
 	IN usrName varchar(55),
 	OUT statusResponse INT
@@ -37,7 +37,7 @@ BEGIN
     Declare propertyFeatureTagsValue varchar(55) default '';
     Declare propertyDescriptionValue varchar(55) default '';
     Declare propertyAddressValue mediumtext default '';
-	Declare sameAsBuildingAddressValue varchar(55) default 0;
+	Declare sameAsPropertyAddressValue varchar(55) default 0;
     
     		-- pass condition data into variable
 	select v.xml from `validate_import_table` v where v.username = usrName and v.date = (select max(date) from validate_import_table) into xml;
@@ -62,16 +62,16 @@ BEGIN
 		SELECT extractvalue(xml, '/records/record[$x]/property_feature_tags') into propertyFeatureTagsValue;
 		SELECT extractvalue(xml, '/records/record[$x]/property_description') into propertyDescriptionValue;
 		SELECT extractvalue(xml, '/records/record[$x]/property_address') into propertyAddressValue;
-        SELECT extractvalue(xml, '/records/record[$x]/same_as_building_address') into sameAsBuildingAddressValue;
+        SELECT extractvalue(xml, '/records/record[$x]/same_as_property_address') into sameAsPropertyAddressValue;
         
         IF (constructionDateValue = '') THEN
 			set constructionDateValue = NULL;
         END IF;
 
-		If (sameAsBuildingAddressValue = '' OR TRIM(sameAsBuildingAddressValue) = 'false') THEN
-			SET sameAsBuildingAddressValue = 0;
-		ELSEIF (TRIM(sameAsBuildingAddressValue) = 'true') THEN
-			SET sameAsBuildingAddressValue = 1;
+		If (sameAsPropertyAddressValue = '' OR TRIM(sameAsPropertyAddressValue) = 'false') THEN
+			SET sameAsPropertyAddressValue = 0;
+		ELSEIF (TRIM(sameAsPropertyAddressValue) = 'true') THEN
+			SET sameAsPropertyAddressValue = 1;
         END IF;
         
 			-- Find Property Type Id
@@ -86,7 +86,7 @@ BEGIN
         `property_archived_flag`, `property_blocked_flag`, `active_flag`, `feature_tag`, `created_by`, `created_date`, `last_modified_by`) VALUES
 		(propertyTypeIdParam, clientIdParam, propertyManagerIdParam, propertyNameValue, propertyDescriptionValue, propertyEmailValue, 
         propertyPhoneValue, propertyAddressValue, 0, 0,
-        constructionDateValue, propertyTaxcodeValue, propertySqftValue, sameAsBuildingAddressValue, 
+        constructionDateValue, propertyTaxcodeValue, propertySqftValue, sameAsPropertyAddressValue, 
 		0, 0, 1, NULL, userIdParam, CURRENT_TIMESTAMP(), userIdParam);
         
 		-- INSERT Amenities
@@ -112,6 +112,9 @@ BEGIN
 			select vals from temp_string where id = propertyFeatureIndex into propertyFeatureName;
 
 			select pf.property_feature_id from `property_feature` pf where TRIM(pf.property_feature_name) = TRIM(propertyFeatureName) into propertyFeatureId;
+            
+            select propertyFeatureId;
+            
             insert into `property_property_feature` (`property_feature_id`, `property_id`, `created_by`, `created_date`, `last_modified_date`, `last_modified_by`)
 				VALUES (propertyFeatureId, (select MAX(property_id) from `property`), userIdParam, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), userIdParam);
                 

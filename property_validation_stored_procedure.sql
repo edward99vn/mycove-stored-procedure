@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `property_validation_stored_procedure`(
+CREATE DEFINER=`dbmasteruser`@`%` PROCEDURE `property_validation_stored_procedure`(
 	-- Add the parameters for the stored procedure here
 	IN usrName varchar(55), 
 	OUT statusResponse INT
@@ -34,7 +34,7 @@ BEGIN
     Declare propertyFeatureTagsValue varchar(55) default '';
     Declare propertyDescriptionValue varchar(55) default '';
     Declare propertyAddressValue mediumtext default '';
-	Declare sameAsBuildingAddressValue varchar(55) default 0;
+	Declare sameAsPropertyAddressValue varchar(55) default 0;
     
 		-- pass condition data into variable
 	select v.xml from `validate_import_table` v where v.username = usrName and v.date = (select max(date) from validate_import_table) into xml;
@@ -61,13 +61,13 @@ BEGIN
 		SELECT extractvalue(xml, '/records/record[$x]/property_feature_tags') into propertyFeatureTagsValue;
 		SELECT extractvalue(xml, '/records/record[$x]/property_description') into propertyDescriptionValue;
 		SELECT extractvalue(xml, '/records/record[$x]/property_address') into propertyAddressValue;
-        SELECT extractvalue(xml, '/records/record[$x]/same_as_building_address') into sameAsBuildingAddressValue;
+        SELECT extractvalue(xml, '/records/record[$x]/same_as_property_address') into sameAsPropertyAddressValue;
         
 		-- START validation
 		SET x = x + 1;
         
-		If (sameAsBuildingAddressValue = '') THEN
-			SET sameAsBuildingAddressValue = 0;
+		If (sameAsPropertyAddressValue = '') THEN
+			SET sameAsPropertyAddressValue = 0;
         END IF;
         
 		-- VALIDATE property name
@@ -98,33 +98,24 @@ BEGIN
         
         IF (propertyPhoneValue = '') THEN
 			SET invalidRows = CONCAT(invalidRows, 'Property Phone is null on row(s): ', x, '; ');
-		ELSEIF (isNumberic(propertyPhoneValue) != true) THEN
-			SET invalidRows = CONCAT(invalidRows, 'Property Phone is not an integer on row(s): ', x, '; ');
+		-- ELSEIF (isNumberic(propertyPhoneValue) != true) THEN
+		-- SET invalidRows = CONCAT(invalidRows, 'Property Phone is not an integer on row(s): ', x, '; ');
+		ELSEIF (isPhoneNumberValid(propertyPhoneValue) != true) THEN
+			SET invalidRows = CONCAT(invalidRows, 'Property Phone is invalid on row(s): ', x, '; ');
 		END IF;
         
         -- VALIDATE propertyEmailValue
         
         IF (propertyEmailValue = '' ) THEN
 			SET invalidRows = CONCAT(invalidRows, 'Property Email is null on row(s): ', x, '; ');
+		ELSEIF (isEmailValid(propertyEmailValue) != true) THEN
+			SET invalidRows = CONCAT(invalidRows, 'Property Email is invalid on row(s): ', x, '; ');
         END IF;
         
         -- VALIDATE propertyAmenitiesValue
         
         IF (propertyAmenitiesValue = '') THEN
 			SET invalidRows = CONCAT(invalidRows, 'Property Amenities is null on row(s): ', x, '; ');
-		ELSE
-			CALL splitString(propertyAmenitiesValue, ',');
-			-- temp_string : this is temperary table to store splited string
-			while propertyAmenityIndex <= (select COUNT(*) from temp_string) do
-				select vals from temp_string where id = propertyAmenityIndex into propertyAmenityName;
-				if ((SELECT COUNT(*) from amenities WHERE TRIM(amenity_name) = TRIM(propertyAmenityName)) = 0) then
-                    SET invalidRows = CONCAT(invalidRows, 'Property Amenities [', TRIM(propertyAmenityName) ,'] does not exist on row(s): ', x, '; ');
-				end if;
-				set propertyAmenityIndex = propertyAmenityIndex + 1;
-			end while;
-            
-			-- reset propertyAmenityIndex;
-			set propertyAmenityIndex = 1;
         END IF;
         
         -- VALIDATE propertyManagerNameValue
@@ -149,8 +140,11 @@ BEGIN
 			while propertyFeatureIndex <= (select COUNT(*) from temp_string) do
 				select vals from temp_string where id = propertyFeatureIndex into propertyFeatureName;
 				if ((SELECT COUNT(*) from property_feature WHERE TRIM(property_feature_name) = TRIM(propertyFeatureName)) = 0) then
-                    SET invalidRows = CONCAT(invalidRows, 'Property Features [', TRIM(propertyFeatureName) ,'] does not exist on row(s): ', x, '; ');
-				end if;
+                    -- SET invalidRows = CONCAT(invalidRows, 'Property Features [', TRIM(propertyFeatureName) ,'] does not exist on row(s): ', x, '; ');
+				-- insert new property feature into the table
+                    insert into `property_feature` (`property_feature_name`, `property_feature_icon_url`, `property_feature_description`, `property_feature_archived_flag`, `property_feature_blocked_flag`, `property_feature_created_by`, `property_feature_created_at`) VALUES
+					(propertyFeatureName, NULL, propertyFeatureName, 0, 0, (select df_user_id from user where user_first_name = propertyManagerNameValue ORDER BY df_user_id LIMIT 1), CURRENT_TIMESTAMP());
+                end if;
 				set propertyFeatureIndex = propertyFeatureIndex + 1;
 			end while;
             
@@ -166,10 +160,10 @@ BEGIN
 			SET invalidRows = CONCAT(invalidRows, 'Property address is null on row(s): ', x, '; ');	
         END IF;
         
-		-- VALIDATE same_as_building_address
+		-- VALIDATE same_as_property_address
         
-        IF (sameAsBuildingAddressValue != '1' AND sameAsBuildingAddressValue != '0' AND TRIM(sameAsBuildingAddressValue) != 'true' AND TRIM(sameAsBuildingAddressValue) != 'false') THEN
-			SET invalidRows = CONCAT(invalidRows, 'Same As Building Address is not one of the following: 1, 0, true, false, null on rows(s): ', x, '; ');
+        IF (sameAsPropertyAddressValue != '1' AND sameAsPropertyAddressValue != '0' AND TRIM(sameAsPropertyAddressValue) != 'true' AND TRIM(sameAsPropertyAddressValue) != 'false') THEN
+			SET invalidRows = CONCAT(invalidRows, 'Same As Property Address is not one of the following: 1, 0, true, false, null on rows(s): ', x, '; ');
         END IF;
         
     END WHILE;
