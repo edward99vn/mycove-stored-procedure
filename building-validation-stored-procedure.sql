@@ -60,10 +60,6 @@ BEGIN
 		-- START validation
 		SET x = x + 1;
         
-		If (sameAsBuildingAddressValue = '') THEN
-			SET sameAsBuildingAddressValue = 0;
-        END IF;
-        
 		-- VALIDATE building name
         
 		IF (buildingNameValue = '') THEN
@@ -152,8 +148,12 @@ BEGIN
         
         -- VALIDATE same_as_building_address
         
-        IF (sameAsBuildingAddressValue != '1' AND sameAsBuildingAddressValue != '0' AND TRIM(sameAsBuildingAddressValue) != 'true' AND TRIM(sameAsBuildingAddressValue) != 'false') THEN
-			SET invalidRows = CONCAT(invalidRows, 'Same As Building Address is not one of the following: 1, 0, true, false, null on rows(s): ', x, '; ');
+        IF (
+		 	LOWER(TRIM(sameAsBuildingAddressValue)) != 'yes' AND 
+			LOWER(TRIM(sameAsBuildingAddressValue)) != 'no' AND 
+            TRIM(sameAsBuildingAddressValue) != '') 
+		THEN
+			SET invalidRows = CONCAT(invalidRows, 'Same As Building Address is not one of the following: yes, no or blank on rows(s): ', x, '; ');
         END IF;
         
     END WHILE;

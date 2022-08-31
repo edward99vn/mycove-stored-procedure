@@ -56,9 +56,9 @@ BEGIN
 		select b.building_id from `building` b where b.building_name = apartmentBuildingValue and b.building_client_id = clientIdParam ORDER BY b.created_date DESC LIMIT 1 into buildingIdParam;
 			-- Find Apartment Type Id
 		select at.room_type_id from `appartment_type` at where at.room_type_name = apartmentTypeValue into apartmentTypeId;
-				
+		
 		-- Insert apartment
-        insert into `apartment` (`apartment_name`, `apartment_building_id`, `apartment_number`, `apartment_description`, `apartment_sqft`, `apartment_common_charge_ammount`, `apartment_rent`, `apartment_blocked_flag`, `apartment_archived_flag`, `apartment_vacent_flag`, `apartment_type_id`, `apartment_client_id`, `created_by`, `created_date`, `last_modified_date`, `last_modified_by`)
+		insert into `apartment` (`apartment_name`, `apartment_building_id`, `apartment_number`, `apartment_description`, `apartment_sqft`, `apartment_common_charge_ammount`, `apartment_rent`, `apartment_blocked_flag`, `apartment_archived_flag`, `apartment_vacent_flag`, `apartment_type_id`, `apartment_client_id`, `created_by`, `created_date`, `last_modified_date`, `last_modified_by`)
 			values (apartmentNameValue, buildingIdParam, apartmentNumberValue, apartmentDescriptionValue, apartmentSqftValue, convert(apartmentCommonChargeAmountValue, float), apartmentRentValue, 0, 1, 1, apartmentTypeId, clientIdParam, clientIdParam, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), clientIdParam);
 
 		-- Insert apartment feature

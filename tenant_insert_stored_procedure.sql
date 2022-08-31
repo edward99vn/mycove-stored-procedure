@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `tenant_insert_stored_procedure`(
+CREATE DEFINER=`dbmasteruser`@`%` PROCEDURE `tenant_insert_stored_procedure`(
 	-- Add the parameters for the stored procedure here
 	IN usrName varchar(55), 
 	OUT statusResponse INT
@@ -49,6 +49,8 @@ BEGIN
         
         IF (dateOfBirthValue = '') THEN
 			SET dateOfBirthValue = NULL;
+		ELSE 
+			SET dateOfBirthValue = DATE_FORMAT(STR_TO_DATE(dateOfBirthValue,'%m/%d/%Y'), '%Y-%m-%d'); 
         END IF;
 	
 		-- INSERT data into User table

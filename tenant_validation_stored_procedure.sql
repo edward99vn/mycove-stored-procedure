@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `tenant_validation_stored_procedure`(
+CREATE DEFINER=`dbmasteruser`@`%` PROCEDURE `tenant_validation_stored_procedure`(
 	-- Add the parameters for the stored procedure here
 	IN usrName varchar(55), 
 	OUT statusResponse INT
@@ -80,6 +80,12 @@ BEGIN
 			SET invalidRows = CONCAT(invalidRows, 'Tenant Email is invalid on row(s): ', x, '; ');
 		ELSEIF ((select count(*) from tenant where tenant_alt_email_id = tenantEmailValue) != 0) THEN
 			SET invalidRows = CONCAT(invalidRows, 'Email address is already being used on row(s): ', x, '; ');
+        END IF;
+        
+        -- VALIDATE dateOfBirthValue
+        
+        IF (isDateValid(dateOfBirthValue) != true) THEN
+			SET invalidRows = CONCAT(invalidRows, 'Date of birth is invalid on row(s): ', x, '; ');
         END IF;
         
 		-- VALIDATE mobileNumberValue

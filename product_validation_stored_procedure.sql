@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `product_validation_stored_procedure`(
+CREATE DEFINER=`dbmasteruser`@`%` PROCEDURE `product_validation_stored_procedure`(
 	-- Add the parameters for the stored procedure here
 	IN usrName varchar(55), 
 	OUT statusResponse INT
@@ -26,22 +26,22 @@ BEGIN
 	select max(date) from validate_import_table into recent;
 	-- Find Client Id
 	select c.client_id from `client` c, `user` u where c.user_id = u.df_user_id and u.user_email = usrName into clientIdParam;
-	
+    
 	-- Turn off SQL SAFE UPDATES
     SET SQL_SAFE_UPDATES = 0;
-    
+
 	-- ----------------------------------------------------- VALIDATION -----------------------------------------------------
-	
+
     WHILE x <= recordNumber DO
 		SELECT extractvalue(xml, '/records/record[$x]/product_name') into productNameValue;
 		SELECT extractvalue(xml, '/records/record[$x]/product_category_name') into productCategoryNameValue;
 		SELECT extractvalue(xml, '/records/record[$x]/description') into descriptionValue;
-        
+
         -- START validation
 		SET x = x + 1;
-        
+
         -- VALIDATE productNameValue;
-        
+
         IF (productNameValue = '') THEN
 			SET invalidRows = CONCAT(invalidRows, 'Product Name is null on row(s): ', x, '; ');
 		ELSEIF ((select COUNT(*) from product where TRIM(product_name) = TRIM(productNameValue)) != 0) THEN

@@ -57,9 +57,9 @@ BEGIN
 		SELECT extractvalue(xml, '/records/record[$x]/building_address') into buildingAddressValue; 
         SELECT extractvalue(xml, '/records/record[$x]/same_as_building_address') into sameAsBuildingAddressValue;
         
-		If (sameAsBuildingAddressValue = '' OR TRIM(sameAsBuildingAddressValue) = 'false') THEN
+		If (sameAsBuildingAddressValue = '' OR LOWER(TRIM(sameAsBuildingAddressValue)) = 'no') THEN
 			SET sameAsBuildingAddressValue = 0;
-		ELSEIF (TRIM(sameAsBuildingAddressValue) = 'true') THEN
+		ELSEIF (LOWER(TRIM(sameAsBuildingAddressValue)) = 'yes') THEN
 			SET sameAsBuildingAddressValue = 1;
         END IF;
         

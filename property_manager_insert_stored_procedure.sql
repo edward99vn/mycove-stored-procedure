@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `property_manager_insert_stored_procedure`(
+CREATE DEFINER=`dbmasteruser`@`%` PROCEDURE `property_manager_insert_stored_procedure`(
 	-- Add the parameters for the stored procedure here
 	IN usrName varchar(55),
 	OUT statusResponse INT
@@ -61,9 +61,10 @@ BEGIN
 		(createdUserIdParam, clientIdParam, 2, NULL, NULL, current_timestamp());
         
         -- UPDATE property manager for property
-        
-        UPDATE `property` SET property_manager_id = createdPmIdParam WHERE property_name = propertyNameValue AND property_client_id = clientIdParam;
-        
+        IF (propertyNameValue != '') THEN
+                UPDATE `property` SET property_manager_id = createdPmIdParam WHERE property_name = propertyNameValue AND property_client_id = clientIdParam;
+        END IF;
+
         -- UPDATE properties count for PM
         
         SELECT COUNT(p.property_id) FROM property p, property_manager pm WHERE p.property_manager_id = pm.propertymanagerid AND pm.parentid=createdUserIdParam and p.active_flag=1 AND p.property_client_id=clientIdParam into propertiesCountParam;

@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `employee_validation_stored_procedure`(
+CREATE DEFINER=`dbmasteruser`@`%` PROCEDURE `employee_validation_stored_procedure`(
 	-- Add the parameters for the stored procedure here
 	IN usrName varchar(55), 
 	OUT statusResponse INT

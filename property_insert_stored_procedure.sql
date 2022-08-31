@@ -70,9 +70,9 @@ BEGIN
 			SET constructionDateValue = DATE_FORMAT(STR_TO_DATE(constructionDateValue,'%m/%d/%Y'), '%Y-%m-%d'); 
         END IF;
 
-		If (sameAsPropertyAddressValue = '' OR TRIM(sameAsPropertyAddressValue) = 'false') THEN
+		If (sameAsPropertyAddressValue = '' OR LOWER(TRIM(sameAsPropertyAddressValue)) = 'no') THEN
 			SET sameAsPropertyAddressValue = 0;
-		ELSEIF (TRIM(sameAsPropertyAddressValue) = 'true') THEN
+		ELSEIF (LOWER(TRIM(sameAsPropertyAddressValue)) = 'yes') THEN
 			SET sameAsPropertyAddressValue = 1;
         END IF;
         
@@ -114,9 +114,7 @@ BEGIN
 			select vals from temp_string where id = propertyFeatureIndex into propertyFeatureName;
 
 			select pf.property_feature_id from `property_feature` pf where TRIM(pf.property_feature_name) = TRIM(propertyFeatureName) into propertyFeatureId;
-            
-            select propertyFeatureId;
-            
+
             insert into `property_property_feature` (`property_feature_id`, `property_id`, `created_by`, `created_date`, `last_modified_date`, `last_modified_by`)
 				VALUES (propertyFeatureId, (select MAX(property_id) from `property`), userIdParam, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), userIdParam);
                 

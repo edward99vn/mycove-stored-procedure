@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `property_manager_validation_stored_procedure`(
+CREATE DEFINER=`dbmasteruser`@`%` PROCEDURE `property_manager_validation_stored_procedure`(
 	-- Add the parameters for the stored procedure here
 	IN usrName varchar(55), 
 	OUT statusResponse INT
@@ -61,11 +61,10 @@ BEGIN
         END IF;
         
 		-- VALIDATE property name
-        
-        IF ((select COUNT(*) from property where property_name = propertyNameValue and property_client_id = clientIdParam) = 0) THEN
+        IF (propertyNameValue != '' and (select COUNT(*) from property where property_name = propertyNameValue and property_client_id = clientIdParam) = 0) THEN
 			SET invalidRows = CONCAT(invalidRows, 'Property Name does not exist on row(s): ', x, '; ');
         END IF;
-        
+	
 		-- VALIDATE propertyManagerPhoneValue
         
         IF (propertyManagerPhoneValue = '') THEN

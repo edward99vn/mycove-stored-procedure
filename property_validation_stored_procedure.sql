@@ -66,10 +66,6 @@ BEGIN
 		-- START validation
 		SET x = x + 1;
         
-		If (sameAsPropertyAddressValue = '') THEN
-			SET sameAsPropertyAddressValue = 0;
-        END IF;
-        
 		-- VALIDATE property name
         
         IF (propertyNameValue = '' ) THEN
@@ -181,8 +177,11 @@ BEGIN
         
 		-- VALIDATE same_as_property_address
         
-        IF (sameAsPropertyAddressValue != '1' AND sameAsPropertyAddressValue != '0' AND TRIM(sameAsPropertyAddressValue) != 'true' AND TRIM(sameAsPropertyAddressValue) != 'false') THEN
-			SET invalidRows = CONCAT(invalidRows, 'Same As Property Address is not one of the following: 1, 0, true, false, null on rows(s): ', x, '; ');
+        IF (LOWER(TRIM(sameAsPropertyAddressValue)) != 'yes' AND
+            LOWER(TRIM(sameAsPropertyAddressValue)) != 'no' AND
+            TRIM(sameAsPropertyAddressValue) != '')
+		THEN
+			SET invalidRows = CONCAT(invalidRows, 'Same As Property Address is not one of the following: Yes, No or blank on rows(s): ', x, '; ');
         END IF;
         
     END WHILE;

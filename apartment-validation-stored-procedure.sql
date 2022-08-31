@@ -56,6 +56,7 @@ BEGIN
         SELECT extractvalue(xml, '/records/record[$x]/apartment_vacent_flag') into apartmentVacentFlagValue;
         SELECT extractvalue(xml, '/records/record[$x]/apartment_type') into apartmentTypeValue;
         
+        
         -- START validation
 		SET x = x + 1;
 
